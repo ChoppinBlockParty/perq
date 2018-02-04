@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 #include <thread>
@@ -15,6 +16,27 @@
 #include "PrefixedNumericalKeyConverter.hpp"
 #include "Stats.hpp"
 #include "TypeHelpers.hpp"
+
+/*
+ * Persistent Queue uses consecutive numbers as IDs for persistency. * That means that
+ * every next number inserted element in the queue receives `tail + 1`
+ * ID.
+ *
+ * 1. When insertion is done concurrently, parallel inserts will be executed in any order.
+ * In case of crash during concurrent insetion consecutive numbering might be broken, when
+ * one insert succeeded and a previous insert did not (e.g. 1-success, 2-success, <crash>,
+ * 3-fail, 5-success). This case must be recoved on startup by moving next rows to
+ * missing IDs.
+ *
+ * 2. Queue IDs may reach a maximum available ID. In this case tail ID must be reset to 0
+ * for the next insertion. Since on startup it is not known where is tail and where is
+ * head. This case must be detected. This happens when consecutive IDs are broken and
+ * there is a large gap between them. This gap must not be distinguished from the gap
+ * described in (1). This is done by taking into account the fact that the crash gap from
+ * (1) is of maximum size of possible parallel insertions what pessimistically case is the
+ * maximum number of threads. On Unix system see `/proc/sys/kernel/threads-max`.
+ *
+ */
 
 #define CurrentLocation perq_SourceLocation_CurrentLocation("PersistentQueue.hpp")
 
@@ -34,17 +56,26 @@ class PersistentQueue {
                 "Key and prefix types must be unsigned");
 
 public:
-  PersistentQueue() : _db() {}
+  PersistentQueue() : _db(), _max_thread_number(std::numeric_limits<size_t>::max()) {}
 
-  PersistentQueue(rocksdb::DB* db) : _db() { Initialize(db); }
+  PersistentQueue(rocksdb::DB* db, size_t max_thread_number = default_max_thread_number)
+    : PersistentQueue() {
+    Initialize(db, max_thread_number);
+  }
 
-  void Initialize(rocksdb::DB* db) {
+  void Initialize(rocksdb::DB* db, size_t max_thread_number = default_max_thread_number) {
     if (_db)
       throw Exception(
         "Fatal error: attempt to initialize PersistentQueue for a second time",
         CurrentLocation);
 
+    if (max_thread_number >= _conv.GetMaxId())
+      throw Exception("Maximum number of threads (" + std::to_string(max_thread_number)
+                        + ") is too large, no item would be able to exist in the queue",
+                      CurrentLocation);
+
     _db = db;
+    _max_thread_number = max_thread_number;
 
     auto it
       = std::unique_ptr<rocksdb::Iterator>(_db->NewIterator(rocksdb::ReadOptions()));
@@ -69,7 +100,7 @@ public:
     // Queue is not empty, we need to find the head and the tail
 
     auto corrector = PersistentQueueIdCorrector<TKey>(
-      _conv.ToId(it->key()), _conv.GetMaxId(), _maxThreadNumber);
+      _conv.ToId(it->key()), _conv.GetMaxId(), _max_thread_number);
 
     for (it->Next();; it->Next()) {
       if (!it->Valid()) {
@@ -126,7 +157,7 @@ public:
       _next_tail.store(0, std::memory_order_relaxed);
     else
       _next_tail.store(corrector.tail() + 1, std::memory_order_relaxed);
-    if (Size() > (_conv.GetMaxId() - _maxThreadNumber))
+    if (Size() > GetMaxSize())
       throw Exception(
         "Fatal queue data state: the queue is too full, cannot execute operations on this queue",
         CurrentLocation);
@@ -371,8 +402,8 @@ public:
                                                          std::memory_order_acquire,
                                                          std::memory_order_acquire));
 
-    auto key = _conv.ToKey(next_tail);
-    const auto status = _db->Put(makeWriteOptions(), ToSlice(&key), value);
+    next_tail = _conv.ToKey(next_tail);
+    const auto status = _db->Put(makeWriteOptions(), ToSlice(&next_tail), value);
     if (!status.ok())
       throw Exception("Fatal error in RocksDB at `RocksDB::Put`: " + status.ToString(),
                       CurrentLocation);
@@ -420,7 +451,7 @@ private:
   }
 
   rocksdb::Slice ToSlice(TKey* key) {
-    return rocksdb::Slice(reinterpret_cast<char*>(key), sizeof(key));
+    return rocksdb::Slice(reinterpret_cast<char*>(key), sizeof(TKey));
   }
 
   rocksdb::WriteOptions makeWriteOptions() {
@@ -440,19 +471,23 @@ private:
     return options;
   }
 
-  size_t GetMaxSize() { return _conv.GetMaxId() - _maxThreadNumber + 1; }
+  size_t GetMaxSize() { return _conv.GetMaxId() - _max_thread_number + 1; }
 
   rocksdb::DB* _db;
+  size_t _max_thread_number;
   std::atomic<TKey> _head;
   std::atomic<TKey> _next_tail;
 
 #if defined(perq_WITH_STATS)
-  Stats _stats;
+  Stats _stats = {};
 #endif
 
-  static constexpr uint64_t _maxThreadNumber = 1000000;
-  static constexpr std::uint_fast8_t _yield_after = 10;
   static constexpr PrefixedNumericalKeyConverter<TKey, TPrefix> _conv = {prefixValue};
+
+  static constexpr size_t default_max_thread_number
+    = (_conv.GetMaxId() > 100000) ? 100000 : 10000;
+
+  static constexpr std::uint_fast8_t _yield_after = 10;
 };
 
 template <typename TKey,

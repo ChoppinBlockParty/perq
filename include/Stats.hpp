@@ -4,15 +4,15 @@
 #include <cstddef>
 
 #if defined(perq_WITH_STATS) && !defined(preq_DISABLE_STATS_OPERATIONS)
-#define perq_LocalStats LocalStats local_stats;
-#define perq_IncrementLocalCasRepetitionCount ++local_stats.cas_repetition_count;
-#define perq_IncrementLocalYieldCount ++local_stats.yield_count;
-#define perq_IncrementLocalGetMissCount ++local_stats.get_miss_count;
+#define perq_LocalStats LocalStats perq_local_stats = {0};
+#define perq_IncrementLocalCasRepetitionCount ++perq_local_stats.cas_repetition_count;
+#define perq_IncrementLocalYieldCount ++perq_local_stats.yield_count;
+#define perq_IncrementLocalGetMissCount ++perq_local_stats.get_miss_count;
 #define perq_IncrementShiftUpCount ++_stats.shift_up_count;
-#define perq_MergeLocalStatsForTop _stats.MergeLocalStatsForTop(local_stats);
-#define perq_MergeLocalStatsForPop _stats.MergeLocalStatsForPop(local_stats);
-#define perq_MergeLocalStatsForPoll _stats.MergeLocalStatsForPoll(local_stats);
-#define perq_MergeLocalStatsForPush _stats.MergeLocalStatsForPush(local_stats);
+#define perq_MergeLocalStatsForTop _stats.MergeLocalStatsForTop(perq_local_stats);
+#define perq_MergeLocalStatsForPop _stats.MergeLocalStatsForPop(perq_local_stats);
+#define perq_MergeLocalStatsForPoll _stats.MergeLocalStatsForPoll(perq_local_stats);
+#define perq_MergeLocalStatsForPush _stats.MergeLocalStatsForPush(perq_local_stats);
 #else
 #define perq_LocalStats (void)0;
 #define perq_IncrementLocalCasRepetitionCount (void)0;

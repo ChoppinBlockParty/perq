@@ -25,7 +25,8 @@ public:
     : _keyTemplate(static_cast<TKey>(prefix) << (sizeof(TKey) - sizeof(TPrefix)) * 8) {}
 
   constexpr TKey ToKey(TKey id) const {
-    return boost::endian::native_to_big(_keyTemplate | (GetMaxId() & id));
+    id = _keyTemplate | (GetMaxId() & id);
+    return boost::endian::native_to_big(id);
   }
 
   constexpr TKey ToId(rocksdb::Slice const& slice) const {
@@ -38,7 +39,9 @@ public:
   }
 
   static constexpr TKey GetMaxId() {
-    return ~(~static_cast<TKey>(0) << (sizeof(TKey) - sizeof(TPrefix)) * 8);
+    return static_cast<TKey>(
+      ~(~typename std::conditional<sizeof(TKey) < 4, size_t, TKey>::type(0)
+        << (sizeof(TKey) - sizeof(TPrefix)) * 8));
   }
 
 private:
@@ -62,6 +65,9 @@ public:
 
   constexpr TKey ToId(TKey key) const { return boost::endian::big_to_native(key); }
 
-  static constexpr TKey GetMaxId() { return ~static_cast<TKey>(0); }
+  static constexpr TKey GetMaxId() {
+    return static_cast<TKey>(
+      ~typename std::conditional<sizeof(TKey) < 4, size_t, TKey>::type(0));
+  }
 };
 }

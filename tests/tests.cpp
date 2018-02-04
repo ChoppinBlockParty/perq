@@ -44,88 +44,150 @@ bool IsSize(T& queue, size_t size) {
 }
 
 TEST_CASE("PrefixedNumericalKeyConverter", "[PrefixedNumericalKeyConverter]") {
+  SECTION("16/8") {
+    auto converter = PrefixedNumericalKeyConverter<uint16_t, uint8_t>(0x00);
+
+    REQUIRE(converter.GetMaxId() == 0xFFu);
+    uint16_t id = 0x00u;
+    uint16_t key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x0000u)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xF0u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x00F0u)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x80u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x0080u)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xFFu;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x00FFu)));
+    REQUIRE(converter.ToId(key) == 0xFFul);
+
+    converter = PrefixedNumericalKeyConverter<uint16_t, uint8_t>(0x0F);
+
+    REQUIRE(converter.GetMaxId() == 0xFFu);
+    id = 0x00u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x0F00u)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xF0u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x0FF0u)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x80u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x0F80u)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xFFu;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0x0FFFu)));
+    REQUIRE(converter.ToId(key) == 0xFFu);
+
+    converter = PrefixedNumericalKeyConverter<uint16_t, uint8_t>(0xFFu);
+
+    REQUIRE(converter.GetMaxId() == 0xFFu);
+    id = 0x00u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0xFF00ul)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xF0u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0xFFF0ul)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x80u;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0xFF80ul)));
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xFFu;
+    key = converter.ToKey(id);
+    REQUIRE(key == boost::endian::native_to_big(static_cast<uint16_t>(0xFFFFul)));
+    REQUIRE(converter.ToId(key) == 0xFFu);
+  }
+
   SECTION("32/16") {
     auto converter = PrefixedNumericalKeyConverter<uint32_t, uint16_t>(0x0001);
 
-    REQUIRE(converter.GetMaxId() == 0x0000FFFF);
-    uint32_t number = 0x00000000ul;
-    uint32_t key = converter.ToKey(number);
+    REQUIRE(converter.GetMaxId() == 0xFFFFul);
+    uint32_t id = 0x00000000ul;
+    uint32_t key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x00010000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x000000F0ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x000000F0ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x000100F0ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00000800ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00000800ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x00010800ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x0000A000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x0000A000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0001A000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00008000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00008000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x00018000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0xFFFFFFFFul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xFFFFFFFFul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0001FFFFul)));
     REQUIRE(converter.ToId(key) == 0x0000FFFFul);
 
     converter = PrefixedNumericalKeyConverter<uint32_t, uint16_t>(0x0F0F);
 
-    REQUIRE(converter.GetMaxId() == 0x0000FFFFul);
-    number = 0x00000000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.GetMaxId() == 0xFFFFul);
+    id = 0x00000000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0F0F0000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x000000F0ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x000000F0ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0F0F00F0ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00000800ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00000800ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0F0F0800ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x0000A000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x0000A000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0F0FA000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00008000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00008000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0F0F8000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0xFFFFFFFFul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xFFFFFFFFul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0x0F0FFFFFul)));
     REQUIRE(converter.ToId(key) == 0x0000FFFFul);
 
     converter = PrefixedNumericalKeyConverter<uint32_t, uint16_t>(0xFFFF);
 
-    REQUIRE(converter.GetMaxId() == 0x0000FFFFul);
-    number = 0x00000000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.GetMaxId() == 0xFFFFul);
+    id = 0x00000000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0xFFFF0000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x000000F0ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x000000F0ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0xFFFF00F0ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00000800ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00000800ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0xFFFF0800ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x0000A000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x0000A000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0xFFFFA000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00008000ul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00008000ul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0xFFFF8000ul)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0xFFFFFFFFul;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0xFFFFFFFFul;
+    key = converter.ToKey(id);
     REQUIRE(key == boost::endian::native_to_big(static_cast<uint32_t>(0xFFFFFFFFul)));
     REQUIRE(converter.ToId(key) == 0x0000FFFF);
   }
@@ -134,88 +196,88 @@ TEST_CASE("PrefixedNumericalKeyConverter", "[PrefixedNumericalKeyConverter]") {
     auto converter = PrefixedNumericalKeyConverter<uint64_t, uint8_t>(0x01);
 
     REQUIRE(converter.GetMaxId() == 0x00FFFFFFFFFFFFFFull);
-    uint64_t number = 0x0000000000000000ull;
-    uint64_t key = converter.ToKey(number);
+    uint64_t id = 0x0000000000000000ull;
+    uint64_t key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x0100000000000000ull)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00FFFFFFFFFFFFFFull;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00FFFFFFFFFFFFFFull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x01FFFFFFFFFFFFFFull)));
-    REQUIRE(converter.ToId(key) == number);
+    REQUIRE(converter.ToId(key) == id);
 
     converter = PrefixedNumericalKeyConverter<uint64_t, uint8_t>(0x0F);
 
     REQUIRE(converter.GetMaxId() == 0x00FFFFFFFFFFFFFFull);
-    number = 0x0000000000000000ull;
-    key = converter.ToKey(number);
+    id = 0x0000000000000000ull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x0F00000000000000ull)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00FFFFFFFFFFFFFFull;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00FFFFFFFFFFFFFFull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x0FFFFFFFFFFFFFFFull)));
-    REQUIRE(converter.ToId(key) == number);
+    REQUIRE(converter.ToId(key) == id);
 
     converter = PrefixedNumericalKeyConverter<uint64_t, uint8_t>(0xFF);
 
     REQUIRE(converter.GetMaxId() == 0x00FFFFFFFFFFFFFFull);
-    number = 0x0000000000000000ull;
-    key = converter.ToKey(number);
+    id = 0x0000000000000000ull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0xFF00000000000000ull)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00FFFFFFFFFFFFFFull;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00FFFFFFFFFFFFFFull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFull)));
-    REQUIRE(converter.ToId(key) == number);
+    REQUIRE(converter.ToId(key) == id);
   }
 
   SECTION("No prefix") {
     auto converter = PrefixedNumericalKeyConverter<uint64_t, NoPrefix>(0);
 
     REQUIRE(converter.GetMaxId() == 0xFFFFFFFFFFFFFFFFull);
-    uint64_t number = 0x0000000000000000ull;
-    uint64_t key = converter.ToKey(number);
+    uint64_t id = 0x0000000000000000ull;
+    uint64_t key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x0000000000000000ull)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00FFFFFFFFFFFFFFull;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00FFFFFFFFFFFFFFull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x00FFFFFFFFFFFFFFull)));
-    REQUIRE(converter.ToId(key) == number);
+    REQUIRE(converter.ToId(key) == id);
 
     converter = PrefixedNumericalKeyConverter<uint64_t, NoPrefix>(0x0F);
 
     REQUIRE(converter.GetMaxId() == 0xFFFFFFFFFFFFFFFFull);
-    number = 0x0000000000000000ull;
-    key = converter.ToKey(number);
+    id = 0x0000000000000000ull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x0000000000000000ull)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00FFFFFFFFFFFFFFull;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00FFFFFFFFFFFFFFull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x00FFFFFFFFFFFFFFull)));
-    REQUIRE(converter.ToId(key) == number);
+    REQUIRE(converter.ToId(key) == id);
 
     converter = PrefixedNumericalKeyConverter<uint64_t, NoPrefix>(0xFF);
 
     REQUIRE(converter.GetMaxId() == 0xFFFFFFFFFFFFFFFFull);
-    number = 0x0000000000000000ull;
-    key = converter.ToKey(number);
+    id = 0x0000000000000000ull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x0000000000000000ull)));
-    REQUIRE(converter.ToId(key) == number);
-    number = 0x00FFFFFFFFFFFFFFull;
-    key = converter.ToKey(number);
+    REQUIRE(converter.ToId(key) == id);
+    id = 0x00FFFFFFFFFFFFFFull;
+    key = converter.ToKey(id);
     REQUIRE(
       key == boost::endian::native_to_big(static_cast<uint64_t>(0x00FFFFFFFFFFFFFFull)));
-    REQUIRE(converter.ToId(key) == number);
+    REQUIRE(converter.ToId(key) == id);
   }
 }
 
@@ -272,7 +334,29 @@ TEST_CASE("PersistentQueueIdCorrector basic", "[PersistentQueueIdCorrector][basi
     "Severe misuse of `PersistentQueueIdCorrector::FeedNext`: the queue is over then end for the second time");
 }
 
-TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
+template <typename TKey, typename TPrefix>
+PersistentQueue<TKey, TPrefix, 231> createQueue(rocksdb::DB* db,
+                                                size_t max_thread_number
+                                                = std::numeric_limits<size_t>::max()) {
+  if (max_thread_number == std::numeric_limits<size_t>::max())
+    return PersistentQueue<TKey, TPrefix, 231>(db);
+  else
+    return PersistentQueue<TKey, TPrefix, 231>(db, max_thread_number);
+}
+
+template <typename TKey>
+PersistentQueue<TKey> createQueue(rocksdb::DB* db,
+                                  size_t max_thread_number
+                                  = std::numeric_limits<size_t>::max()) {
+  if (max_thread_number == std::numeric_limits<size_t>::max())
+    return PersistentQueue<TKey>(db);
+  else
+    return PersistentQueue<TKey>(db, max_thread_number);
+}
+
+template <typename TKey>
+void PersistentQueueBasicTest(size_t max_thread_number
+                              = std::numeric_limits<size_t>::max()) {
   auto temp_directory_path = fs::temp_directory_path() / "perq";
   if (fs::exists(temp_directory_path)) {
     fs::remove_all(temp_directory_path);
@@ -289,7 +373,7 @@ TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
   db.reset(temp_db);
 
   SECTION("New queue") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(queue.stats() == Stats());
 
     // Emptiness test
@@ -351,11 +435,12 @@ TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
       REQUIRE(queue.Push(value));
       REQUIRE(IsSize(queue, i + 1));
     }
+
     REQUIRE(queue.stats() == Stats());
   }
 
   {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     for (size_t i = 0; i < 100; ++i) {
       queue.Push(makeRandomString());
     }
@@ -371,7 +456,7 @@ TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
   }
 
   SECTION("Existing queue") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
 
     REQUIRE(IsSize(queue, 100));
 
@@ -392,7 +477,7 @@ TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
   }
 
   {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     while (queue.Pop())
       ;
     for (size_t i = 0; i < 99; ++i) {
@@ -412,7 +497,7 @@ TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
   SECTION("No-prefix queue") {
     // This is just a test, never do any similar on real data: do not change the queue
     // type
-    auto queue = PersistentQueue<uint64_t>(db.get());
+    auto queue = createQueue<TKey>(db.get(), max_thread_number);
     REQUIRE(IsSize(queue, 99));
 
     for (size_t i = 0; i < 99; ++i) {
@@ -456,7 +541,10 @@ TEST_CASE("PersistentQueue basic", "[PersistentQueue][basic]") {
   }
 }
 
-TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
+template <typename TKey>
+void PersistentQueueParallelTest(size_t operation_number,
+                                 size_t max_thread_number
+                                 = std::numeric_limits<size_t>::max()) {
   auto temp_directory_path = fs::temp_directory_path() / "perq";
   if (fs::exists(temp_directory_path)) {
     fs::remove_all(temp_directory_path);
@@ -472,35 +560,35 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
     REQUIRE(false);
   db.reset(temp_db);
 
-  SECTION("Paralle Top") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Top") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
     {
       std::thread thread_one([&]() {
-        for (int i = 0; i < 50000; ++i)
+        for (size_t i = 0; i < operation_number / 2; ++i)
           queue.Push("small");
       });
       std::thread thread_two([&]() {
-        for (int i = 0; i < 50000; ++i)
+        for (size_t i = 0; i < operation_number / 2; ++i)
           queue.Push("small 2");
       });
       thread_one.join();
       thread_two.join();
     }
-    REQUIRE(IsSize(queue, 100000));
+    REQUIRE(IsSize(queue, operation_number));
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Top();
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Top();
     });
     thread_one.join();
     thread_two.join();
 
-    REQUIRE(IsSize(queue, 100000));
+    REQUIRE(IsSize(queue, operation_number));
 
     REQUIRE(queue.stats().top_get_miss_count == 0);
     REQUIRE(queue.stats().top_yield_count == 0);
@@ -509,70 +597,72 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
       ;
   }
 
-  SECTION("Paralle Pop") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Pop") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
     {
       std::thread thread_one([&]() {
-        for (int i = 0; i < 50000; ++i)
+        for (size_t i = 0; i < operation_number / 2; ++i)
           queue.Push("small");
       });
       std::thread thread_two([&]() {
-        for (int i = 0; i < 50000; ++i)
+        for (size_t i = 0; i < operation_number / 2; ++i)
           queue.Push("small 2");
       });
       thread_one.join();
       thread_two.join();
     }
-    REQUIRE(IsSize(queue, 100000));
+    REQUIRE(IsSize(queue, operation_number));
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Pop();
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Pop();
     });
     thread_one.join();
     thread_two.join();
     REQUIRE(IsEmpty(queue));
 
+    std::cerr << "Parallel Pop" << std::endl;
     std::cerr << "Pop cas repetition count: " << queue.stats().pop_cas_repetion_count
               << std::endl;
     std::cerr << "Pop yield count: " << queue.stats().pop_yield_count << std::endl;
     std::cerr << "Pop get miss count: " << queue.stats().pop_get_miss_count << std::endl;
   }
 
-  SECTION("Paralle Poll") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Poll") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
     {
       std::thread thread_one([&]() {
-        for (int i = 0; i < 50000; ++i)
+        for (size_t i = 0; i < operation_number / 2; ++i)
           queue.Push("small");
       });
       std::thread thread_two([&]() {
-        for (int i = 0; i < 50000; ++i)
+        for (size_t i = 0; i < operation_number / 2; ++i)
           queue.Push("small 2");
       });
       thread_one.join();
       thread_two.join();
     }
-    REQUIRE(IsSize(queue, 100000));
+    REQUIRE(IsSize(queue, operation_number));
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Poll();
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Poll();
     });
     thread_one.join();
     thread_two.join();
     REQUIRE(IsEmpty(queue));
 
+    std::cerr << "Parallel Poll" << std::endl;
     std::cerr << "Poll cas repetition count: " << queue.stats().poll_cas_repetion_count
               << std::endl;
     std::cerr << "Poll yield count: " << queue.stats().poll_yield_count << std::endl;
@@ -580,23 +670,24 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
               << std::endl;
   }
 
-  SECTION("Paralle Push") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Push") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Push("small");
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Push("small 2");
     });
     thread_one.join();
     thread_two.join();
 
-    REQUIRE(IsSize(queue, 100000));
+    REQUIRE(IsSize(queue, operation_number));
 
+    std::cerr << "Parallel Push" << std::endl;
     std::cerr << "Push cas repetition count: " << queue.stats().push_cas_repetion_count
               << std::endl;
     std::cerr << "Push yield count: " << queue.stats().push_yield_count << std::endl;
@@ -609,16 +700,16 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
       ;
   }
 
-  SECTION("Paralle Push And Pop") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Push and Pop") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Push("small");
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000;) {
+      for (size_t i = 0; i < operation_number / 2;) {
         if (queue.Pop())
           ++i;
       }
@@ -628,29 +719,27 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
 
     REQUIRE(IsEmpty(queue));
 
-    std::cerr << "Pop cas repetition count: " << queue.stats().pop_cas_repetion_count
-              << std::endl;
-    std::cerr << "Pop yield count: " << queue.stats().pop_yield_count << std::endl;
+    std::cerr << "Parallel Push and Pop" << std::endl;
     std::cerr << "Pop get miss count: " << queue.stats().pop_get_miss_count << std::endl;
-    std::cerr << "Push cas repetition count: " << queue.stats().push_cas_repetion_count
-              << std::endl;
-    std::cerr << "Push yield count: " << queue.stats().push_yield_count << std::endl;
-    std::cerr << "Push cas repetition max count: "
-              << queue.stats().push_cas_repetion_max_count << std::endl;
-    std::cerr << "Push cas yield max count: " << queue.stats().push_cas_yield_max_count
-              << std::endl;
+
+    REQUIRE(queue.stats().pop_cas_repetion_count == 0);
+    REQUIRE(queue.stats().pop_yield_count == 0);
+    REQUIRE(queue.stats().push_cas_repetion_count == 0);
+    REQUIRE(queue.stats().push_yield_count == 0);
+    REQUIRE(queue.stats().push_cas_repetion_max_count == 0);
+    REQUIRE(queue.stats().push_cas_yield_max_count == 0);
   }
 
-  SECTION("Paralle Push And Poll") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Push and Poll") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Push("small");
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000;) {
+      for (size_t i = 0; i < operation_number / 2;) {
         if (queue.Poll().second)
           ++i;
       }
@@ -660,38 +749,38 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
 
     REQUIRE(IsEmpty(queue));
 
-    std::cerr << "Poll cas repetition count: " << queue.stats().poll_cas_repetion_count
-              << std::endl;
-    std::cerr << "Poll yield count: " << queue.stats().poll_yield_count << std::endl;
+    std::cerr << "Parallel Push and Poll" << std::endl;
     std::cerr << "Poll get miss count: " << queue.stats().poll_get_miss_count
               << std::endl;
 
+    REQUIRE(queue.stats().poll_cas_repetion_count == 0);
+    REQUIRE(queue.stats().poll_yield_count == 0);
     REQUIRE(queue.stats().push_cas_repetion_count == 0);
     REQUIRE(queue.stats().push_yield_count == 0);
     REQUIRE(queue.stats().push_cas_repetion_max_count == 0);
     REQUIRE(queue.stats().push_cas_yield_max_count == 0);
   }
 
-  SECTION("Paralle Push And Poll And Size") {
-    auto queue = PersistentQueue<uint64_t, uint8_t, 231>(db.get());
+  SECTION("Parallel Push And Poll And Size") {
+    auto queue = createQueue<TKey, uint8_t>(db.get(), max_thread_number);
     REQUIRE(IsEmpty(queue));
 
     std::atomic_bool is_running(true);
 
     std::thread thread_one([&]() {
-      for (int i = 0; i < 50000; ++i)
+      for (size_t i = 0; i < operation_number / 2; ++i)
         queue.Push("small");
     });
     std::thread thread_two([&]() {
-      for (int i = 0; i < 50000;) {
+      for (size_t i = 0; i < operation_number / 2;) {
         if (queue.Poll().second)
           ++i;
       }
       is_running = false;
     });
     std::thread thread_three([&]() {
-      for (int i = 0; is_running; ++i) {
-        if (queue.Size() > 50000)
+      for (size_t i = 0; is_running; ++i) {
+        if (queue.Size() > operation_number / 2)
           throw std::runtime_error("Invalid size");
       }
     });
@@ -706,4 +795,28 @@ TEST_CASE("PersistentQueue parallel", "[PersistentQueue][parallel]") {
     REQUIRE(queue.stats().push_cas_repetion_max_count == 0);
     REQUIRE(queue.stats().push_cas_yield_max_count == 0);
   }
+}
+
+TEST_CASE("PersistentQueue 16 basic", "[PersistentQueue][16][basic]") {
+  PersistentQueueBasicTest<uint16_t>(20);
+}
+
+TEST_CASE("PersistentQueue 32 basic", "[PersistentQueue][32][basic]") {
+  PersistentQueueBasicTest<uint32_t>();
+}
+
+TEST_CASE("PersistentQueue 64 basic", "[PersistentQueue][64][basic]") {
+  PersistentQueueBasicTest<uint64_t>();
+}
+
+TEST_CASE("PersistentQueue 16 parallel", "[PersistentQueue][16][parallel]") {
+  PersistentQueueParallelTest<uint16_t>(234, 20);
+}
+
+TEST_CASE("PersistentQueue 32 parallel", "[PersistentQueue][32][parallel]") {
+  PersistentQueueParallelTest<uint32_t>(100000);
+}
+
+TEST_CASE("PersistentQueue 64 parallel", "[PersistentQueue][64][parallel]") {
+  PersistentQueueParallelTest<uint64_t>(100000);
 }
